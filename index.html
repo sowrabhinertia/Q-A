@@ -1,0 +1,116 @@
+<html>
+<head>
+  <title>olca</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <link class="jsbin" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+<script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+<meta charset=utf-8 />
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+  body{
+    margin-top: 30px;
+  }
+  article, aside, figure, footer, header, hgroup,
+  menu, nav, section { display: block; }
+  .well{
+    margin: 30px;
+    border: 1px solid lightgrey;
+    background-color: lightgrey;
+    width:94%;
+  }
+  #messageArea{
+    display:none;
+  }
+  .col-md-3{
+    padding-right: 100px;
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+  <center><h2>Q&A Forum</h2></center><hr>
+    <div id="userFormArea" class="row">
+      <div class="col-md-12">
+        <form id="userForm">
+          <div class="form-group">
+            <b><lable>Username : </lable></b>
+            <input type="text" placeholder="Enter your name" class="form-control" id="username" required></textarea></br>
+            <input type="submit" class="btn btn-primary" value="login" />
+          </div>
+        </form>
+      </div>
+    </div>
+
+<div class="row" id="messageArea">
+      <div class="col-md-4">
+        <div class="well1">
+          <h3>online users</h3>
+          <ul class="list-group" id="users"></ul>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="chat" id="chat"></div>
+        <form action="/" method="post" id="messageForm">
+          <div class="form-group">
+            <lable>Enter your quesion</lable>
+            <textarea class="form-control" id="message"></textarea>
+          </br>
+            <input type="submit"  class="btn btn-primary" value="Ask question" />
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <center><p>&#169 Sowrabh Ullal 2018</p></center>
+  <script>
+  $(function(){
+    var socket=io.connect();
+    var $messageForm=$("#messageForm");
+    var $message=$("#message");
+    var $chat=$("#chat");
+    var $messageArea=$("#messageArea");
+    var $userFormArea=$("#userFormArea");
+    var $userForm=$("#userForm");
+    var $users=$("#users");
+    var $username=$("#username");
+
+
+    $messageForm.submit(function(e){
+      e.preventDefault();
+      socket.emit("send message", $message.val());
+      $message.val("");
+
+    });
+  socket.on("new message",function(data){
+    $chat.append('<div class="well"><strong>'+data.user+'</strong> : '+data.msg+'</div>')
+  });
+
+  $userForm.submit(function(e){
+    e.preventDefault();
+    socket.emit("new user", $username.val(),function(data){
+      if(data){
+        $userFormArea.hide();
+        $messageArea.show();
+      }
+
+    });
+    $username.val("");
+
+  });
+socket.on("get users",function(data){
+  var html="";
+  for(i=0;i<data.length;i++){
+    html+="<li class='list-group-item'>"+data[i]+"</li>"
+  }
+  $users.html(html);
+
+})
+
+});
+
+  </script>
+</body>
+</html>
